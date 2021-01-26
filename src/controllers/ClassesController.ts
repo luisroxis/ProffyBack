@@ -22,7 +22,9 @@ export default class ClassesController {
       })
     }
 
-    const timeInMinutes = convertHourstoMinutes(time)
+    const timeInMinutes = convertHourstoMinutes(filters.time as string)
+
+    console.log(timeInMinutes)
 
     const classes = await db('classes')
       .whereExists(function() {
@@ -31,13 +33,12 @@ export default class ClassesController {
           .whereRaw('class_schedule.class_id = classes.id')
           .whereRaw('class_schedule.week_day = ??', [Number(week_day)])
           .whereRaw('class_schedule.from <= ??', [timeInMinutes])
-          .whereRaw('class_schedule.from > ??', [timeInMinutes])
+          .whereRaw('class_schedule.to > ??', [timeInMinutes])
       })
       .where('classes.subject', '=', subject)
       .join('users', 'classes.user_id', '=', 'users.id')
       .select(['classes.*', 'users.*'])
 
-      console.log(classes)
 
     return response.json(classes)
   }
